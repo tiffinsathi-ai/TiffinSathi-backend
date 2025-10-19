@@ -1,0 +1,28 @@
+name: Update Contributor Stats
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # every Sunday
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install git-fame
+        run: pip install git-fame
+
+      - name: Generate contributor stats
+        run: git fame --format markdown --sort commits > STATS.md
+
+      - name: Insert into README
+        run: |
+          sed -i '/## 📊 Contribution Stats/,$d' README.md
+          echo "## 📊 Contribution Stats" >> README.md
+          cat STATS.md >> README.md
+
+      - name: Commit updated README
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update contributor stats"
